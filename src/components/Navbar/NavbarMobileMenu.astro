@@ -1,0 +1,14 @@
+---
+import MobileLink from './NavbarMobileMenuLink.astro'
+
+export interface Props {
+  links: { href: string; text: string }[]
+}
+const { links } = Astro.props
+---
+
+<div class='hidden sm:hidden' id='mobile-menu'>
+  <div class='space-y-1 pb-3 pt-2'>
+    {links.map((link) => <MobileLink href={link.href}>{link.text}</MobileLink>)}
+  </div>
+</div>

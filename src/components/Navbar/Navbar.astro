@@ -1,0 +1,32 @@
+---
+import Link from './NavbarLink.astro'
+import Brand from '../BrandLogo.astro'
+import MobileMenu from './NavbarMobileMenu.astro'
+import MobileMenuToggle from './NavbarMobileMenuToggle.astro'
+
+const SITE_LINKS = [
+  { href: '/', text: 'Home' },
+  { href: '/about', text: 'About' },
+]
+---
+
+<nav class='border-b border-gray-200 bg-white'>
+  <div class='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+    <div class='flex h-16 justify-between'>
+      <div class='flex'>
+        <div class='flex flex-shrink-0 items-center'>
+          <Brand />
+        </div>
+        <div class='hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8'>
+          {SITE_LINKS.map((link) => <Link href={link.href}>{link.text}</Link>)}
+        </div>
+      </div>
+      <div class='-mr-2 flex items-center sm:hidden'>
+        <MobileMenuToggle />
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu, show/hide based on menu state. -->
+  <MobileMenu links={SITE_LINKS} />
+</nav>
