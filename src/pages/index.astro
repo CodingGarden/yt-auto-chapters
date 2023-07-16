@@ -69,40 +69,32 @@ import Layout from '../layouts/Layout.astro'
 						const host = url.host.toLowerCase()
 						const searchParams = new URLSearchParams(url.search)
 						const videoId = searchParams.get('v')
+						console.log(videoId)
 
 						if (
 							(host === 'www.youtube.com' || host === 'youtube.com') &&
 							videoId
 						) {
 							submitButton.disabled = false
-							submitButton.classList.remove('bg-blue-200')
-							submitButton.classList.add(
-								'bg-blue-600',
-								'hover:bg-blue-500',
-								'cursor-pointer'
-							)
 						} else {
 							throw new Error()
 						}
 					} catch (err) {
 						submitButton.disabled = true
-						submitButton.classList.remove(
-							'bg-blue-600',
-							'hover:bg-blue-500',
-							'cursor-pointer'
-						)
-						submitButton.classList.add('bg-blue-200')
 					}
 				})
 
-				form.addEventListener('submit', (event) => {
-					event.preventDefault()
-
-					// Submit your form or perform your action here.
-					console.log(
-						'Video ID: ' +
-							new URLSearchParams(new URL(input.value).search).get('v')
-					)
+				form.addEventListener('submit', (e) => {
+					e.preventDefault()
+					const formData = new FormData(form)
+					const url = formData.get('url')
+					const videoId = new URLSearchParams(new URL(input).search).get('v')
+					console.log(videoId)
+					if (!videoId) {
+						// TODO handle no video id
+						console.log('No video id')
+						return
+					}
 				})
 			</script>
 		</aside>
