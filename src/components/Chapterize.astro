@@ -1,0 +1,125 @@
+<aside class='bg-white shadow-lg rounded-md p-6 mb-4'>
+  <form>
+    <label for='url' class='text-2xl font-bold text-blue-600 pb-2'
+      >Chapterize Video</label
+    >
+    <input
+      id='url'
+      name='url'
+      type='search'
+      class='mt-4 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+      placeholder='Paste your video URL here'
+    />
+    <button
+      class='mt-3 w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-500 disabled:bg-blue-200 disabled:cursor-not-allowed'
+      type='submit'
+      disabled
+    >
+      Chapterize It!
+    </button>
+    <p id='feedback'></p>
+  </form>
+
+  <!-- Output -->
+  <section id='output-section' aria-label='Chapterized Results'>
+    <h2 class='text-2xl font-bold text-blue-600 pb-2 pt-6'>Output</h2>
+    <div class='bg-white shadow-lg rounded-md p-6 mb-4'>
+      <p class='text-gray-700' id='output'></p>
+    </div>
+  </section>
+</aside>
+
+<script>
+  // Imports
+  import DOMPurify from 'dompurify'
+
+  // Selectors
+  const inputField = document.getElementById('url')
+  const formElement = document.querySelector('form')
+  const submitButton = document.querySelector('button[type="submit"]')
+  const outputElement = document.querySelector('#output')
+  const outputSection = document.querySelector('#output-section')
+  const feedbackElement = document.querySelector('#feedback')
+
+  // Selector Element Error Handling
+  if (
+    !inputField ||
+    !formElement ||
+    !submitButton ||
+    !outputElement ||
+    !outputSection ||
+    !feedbackElement
+  )
+    throw new Error('Page is missing key elements')
+
+  // Variables
+  let videoId = ''
+  let lastChapterizedVideoId = ''
+
+  // Functions
+
+  /**
+   * Fetches the chapterized video from the server and displays it in the output element.
+   */
+  const chapterize = async () => {
+    try {
+      const res = await fetch('/api/chapterize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ videoId }),
+      })
+      const data = await res.json()
+      outputElement.innerHTML = data
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  /**
+   * Handles the form submission event. Prevents the default form submission behavior and calls the chapterize function.
+   */
+  const handleSubmit = (e: SubmitEvent) => {
+    e.preventDefault()
+    chapterize()
+    lastChapterizedVideoId = videoId
+  }
+
+  /**
+   * Handles enabling or disabling the submit button based on the validity of the video ID.
+   */
+  const handleSubmitButton = () => {
+    if (videoId.length > 0 && videoId !== lastChapterizedVideoId) {
+      // We have a valid videoId, enable submit button.
+      ;(submitButton as HTMLButtonElement).disabled = false
+    } else {
+      // Invalid videoId, disable submit button.
+      ;(submitButton as HTMLButtonElement).disabled = true
+    }
+  }
+
+  /**
+   * Clears the user feedback element.
+   */
+  const clearFeedback = () => {
+    if (feedbackElement.innerHTML !== '') feedbackElement.innerHTML = ''
+  }
+
+  /**
+   * Handles the input event. Sanitizes the input and extracts the video ID from the URL. If the video ID is valid, the submit button is enabled. Otherwise, the submit button is disabled. The submit button is disabled by default.
+   * @param e The input event
+   */
+  const handleInput = (e: Event) => {
+    const uncleanData = (e.target as HTMLInputElement).value
+    const cleanData = DOMPurify.sanitize(uncleanData)
+    const url = new URL(cleanData)
+    videoId = url.searchParams.get('v') || ''
+    handleSubmitButton()
+    clearFeedback()
+  }
+
+  // Event Listeners
+  formElement.addEventListener('submit', handleSubmit)
+  inputField.addEventListener('input', handleInput)
+</script>
