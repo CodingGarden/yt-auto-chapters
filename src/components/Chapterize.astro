@@ -62,16 +62,31 @@
    * Fetches the chapterized video from the server and displays it in the output element.
    */
   const chapterize = async () => {
+    const body = JSON.stringify({ videoId })
     try {
-      const res = await fetch('/api/chapterize', {
+      const res = await fetch('/api/chapterize.json', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ videoId }),
+        body,
       })
+      if (res.status === 400) {
+        const data = await res.json()
+        feedbackElement.innerHTML = data.message
+        throw new Error(data.message)
+      }
+      if (res.status === 500) {
+        throw new Error('Internal Server Error')
+      }
       const data = await res.json()
-      outputElement.innerHTML = data
+      const { chapters } = data
+      if (!chapters) throw new Error('No data returned from server')
+      const lines: string[] = chapters.split('\n')
+      const chapterItems = lines.map((line) => {
+        return `<li>${line}</li>`
+      })
+      outputElement.innerHTML = `<ol>${chapterItems.join('')}</ol>`
     } catch (err) {
       console.error(err)
     }
@@ -80,9 +95,9 @@
   /**
    * Handles the form submission event. Prevents the default form submission behavior and calls the chapterize function.
    */
-  const handleSubmit = (e: SubmitEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault()
-    chapterize()
+    await chapterize()
     lastChapterizedVideoId = videoId
   }
 
