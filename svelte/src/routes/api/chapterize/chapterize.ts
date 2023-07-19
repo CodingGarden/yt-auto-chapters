@@ -17,7 +17,7 @@ export const chapterize = async (transcript: string, apiToken: string, error: Ht
 
   // Configure OpenAI Client with the provided API token
   const openAIConfig = new Configuration({ apiKey: apiToken });
-  const openAIApi = new OpenAIApi(openAIConfig);
+  const OpenAI = new OpenAIApi(openAIConfig);
 
   // Chapterize Transcript
   try {
