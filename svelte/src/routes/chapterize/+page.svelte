@@ -3,7 +3,9 @@
 	import Onboarding from './Onboarding.svelte';
 	import Chapterize from './Chapterize.svelte';
 	import ResetKey from './ResetKey.svelte';
+	import LoadingSpinner from './LoadingSpinner.svelte';
 
+	let pageLoaded: boolean = false;
 	let onboardingComplete: boolean = false;
 	let apiKey: string | null = null;
 
@@ -12,6 +14,7 @@
 		apiKey = localStorage.getItem('apiKey');
 		if (!apiKey) onboardingComplete = false;
 		else onboardingComplete = true;
+		pageLoaded = true;
 	});
 
 	/**
@@ -42,8 +45,10 @@
 <div class="p-10">
 	{#if !onboardingComplete}
 		<Onboarding {saveApiKey} />
-	{:else}
+	{:else if pageLoaded}
 		<Chapterize bind:apiKey />
 		<ResetKey {removeApiKey} />
+	{:else}
+		<LoadingSpinner />
 	{/if}
 </div>
