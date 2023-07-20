@@ -19,26 +19,66 @@ export const chapterize = async (transcript: string, apiToken: string, error: Ht
   const openAIConfig = new Configuration({ apiKey: apiToken });
   const OpenAI = new OpenAIApi(openAIConfig);
 
-  // Chapterize Transcript
-  try {
-    const { data } = await OpenAI.createChatCompletion({
-      model: "gpt-4-0613",
-      messages: [
-        systemMessage,
-        {
-          role: 'user',
-          content: transcript,
-        },
-      ],
-    });
+  /**
+   * Function to generate chapters from a given transcript using OpenAI's GPT-4 model.
+   */
+  const getChapters = async (transcript: string, conversation?: { model: string; messages: { role: 'user' | 'system' | 'assistant'; content: string; }[]; }) => {
+    // if (conversation) {
+    //   conversation.messages.push({
+    //     role: 'user',
+    //     content: transcript,
+    //   });
+    //   try {
+    //     const { data } = await OpenAI.createChatCompletion(conversation);
+    //     const chapters = data.choices[0].message?.content;
+    //     // Add new lines after each chapter
+    //     return chapters?.replace(/(?<=\w)\n/g, '\n');
+    //   } catch (e) {
+    //     // Log any error that occurs during the chat completion creation
+    //     console.error('Error from OpenAI API:', e);
 
-    // Return the content of the first message in the chat completion
-    return data.choices[0].message?.content;
-  } catch (e) {
-    // Log any error that occurs during the chat completion creation
-    console.error('Error from OpenAI API:', e);
+    //     // If error object is provided, use it to handle the error
+    //     if (error) error.message = 'Error from OpenAI API: ' + e.message;
+    //   }
+    // }
 
-    // If error object is provided, use it to handle the error
-    if (error) error.message = 'Error from OpenAI API: ' + e.message;
+    try {
+      const { data } = await OpenAI.createChatCompletion({
+        model: "gpt-4-0613",
+        messages: [
+          systemMessage,
+          {
+            role: 'user',
+            content: transcript,
+          },
+        ],
+      });
+      const chapters = data.choices[0].message?.content;
+      // Add each chapter as an element of an array 
+      const arr = chapters?.split('\n');
+      return arr;
+    } catch (e) {
+      // Log any error that occurs during the chat completion creation
+      console.error('Error from OpenAI API:', e);
+
+      // If error object is provided, use it to handle the error
+      if (error) error.message = 'Error from OpenAI API: ' + e.message;
+    }
+  };
+
+  // If transcript is less than 10,000 characters, chapterize it and return the result.
+  if (transcript.length <= 10000) {
+    return await getChapters(transcript);
   }
+
+  // Otherwise, break into chunks of 10,000 characters
+  const transcriptChunks = transcript.match(/.{1,10000}/g);
+  const chapterChunks = [];
+  while (transcriptChunks?.length) {
+    const transcriptChunk = transcriptChunks.shift();
+    const chapter = await getChapters(transcriptChunk);
+    chapterChunks.push(chapter);
+  }
+  // Join the chapters together and return the result
+  return chapterChunks.join('\n');
 };

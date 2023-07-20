@@ -1,5 +1,6 @@
 <script lang="ts">
 	import DOMPurify from 'dompurify';
+	import LoadingSpinner from './LoadingSpinner.svelte';
 
 	// Props
 	export let apiKey: string | null = null;
@@ -7,6 +8,8 @@
 	// Data
 	let videoUrl: string | null = null;
 	let videoId: string | null = null;
+	let working = false;
+	let chapters = '';
 
 	/**
 	 * Sanitizes the URL to prevent XSS attacks
@@ -25,6 +28,7 @@
 	 * Sends the video ID to the API to be chapterized
 	 */
 	const chapterize = async () => {
+		working = true;
 		// Ensure we have a video URL before proceeding
 		if (!videoUrl) throw new Error('Error chapterizing video. No video URL was provided.');
 		// Sanitize video URL and extract video ID
@@ -41,9 +45,8 @@
 			body: JSON.stringify({ videoId })
 		});
 
-		// Handle response...
-		const data = await response.json();
-		console.log(data);
+		chapters = await response.json();
+		working = false;
 	};
 </script>
 
@@ -57,7 +60,19 @@
 			class="w-full px-4 py-2 border rounded mb-4 text-center"
 			placeholder="Enter a YouTube video URL"
 			bind:value={videoUrl}
+			disabled={working}
 		/>
-		<button class="px-4 py-2 bg-indigo-600 text-white rounded" type="submit">Chapterize</button>
+		<button
+			class="px-4 py-2 bg-indigo-600 text-white rounded disabled:bg-gray-100"
+			type="submit"
+			disabled={working}>Chapterize</button
+		>
 	</form>
+</div>
+
+<!-- Chapters Output -->
+<div class="mx-auto max-w-xl my-8">
+	{#each chapters as chapter}
+		<p class="text-gray-500">{chapter}</p>
+	{/each}
 </div>
