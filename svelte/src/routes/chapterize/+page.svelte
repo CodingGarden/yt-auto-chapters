@@ -3,7 +3,7 @@
 	import Onboarding from './Onboarding.svelte';
 	import Chapterize from './Chapterize.svelte';
 	import ResetKey from './ResetKey.svelte';
-	import LoadingSpinner from './LoadingSpinner.svelte';
+	import LoadingSpinner from './ProgressBar.svelte';
 
 	let pageLoaded: boolean = false;
 	let onboardingComplete: boolean = false;
@@ -49,6 +49,6 @@
 		<Chapterize bind:apiKey />
 		<ResetKey {removeApiKey} />
 	{:else}
-		<LoadingSpinner />
+		<p>Loading...</p>
 	{/if}
 </div>
